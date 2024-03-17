@@ -6,7 +6,7 @@ use tokio::sync::Mutex;
 use warp::http::Method;
 use warp::{Rejection, Reply, reply};
 use warp::reply::{json, Json};
-use crate::cors_config::{get_acao, get_value};
+use crate::cors_config::{get_cors_key, get_cors_value};
 use crate::data_models::{Message, ObjectLogs, OwnerNotes, WriteDataBody, WriteToBaseNewCustomer};
 
 type WebResult<T> = Result<T, Rejection>;
@@ -18,7 +18,7 @@ pub async fn refuse_connection(_ : Method) -> WebResult<impl Reply> { // Refuse 
 fn reply_with_message<T>(message : T) -> WebResult<reply::WithHeader<Json>>
     where T : Display
 {
-    Ok(reply::with_header(json(&Message{reply : message.to_string()}), get_acao(), get_value()))
+    Ok(reply::with_header(json(&Message{reply : message.to_string()}), "Access-Control-Allow-Origin", "*"))
 }
 pub async fn handle_writing_task(body : WriteDataBody, pool : Arc<Mutex<PooledConn>>) -> WebResult<impl Reply> {
     let mut sample_to_write : Vec<WriteToBaseNewCustomer> = Vec::with_capacity(1);
@@ -43,7 +43,9 @@ pub async fn handle_writing_task(body : WriteDataBody, pool : Arc<Mutex<PooledCo
         "object_logs" => serde_json::to_string(&value.object_logs).unwrap()
     }))
     {
-        Ok(_) => {reply_with_message("Ваша заявка успешно отправлена.")}
+        Ok(_) => {
+            Ok(reply::with_header(json(&Message{reply : "OK".to_string()}), "Access-Control-Allow-Origin", "*"))
+        }
         Err(e) => {reply_with_message(e)}
     }
 }
