@@ -1,9 +1,12 @@
 use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 
+pub const SESSION_DURATION : u16 = 900; // duration of login session in seconds
+
 #[derive(Debug, Serialize)]
 pub struct Message { // An easy answer to show a result of some action
-    pub reply : String
+    pub is_succeed: bool,
+    pub message : String
 }
 #[derive(Debug, Serialize)]
 pub struct LoginTryMessage { // An answer fo try to log in the system. If successful - user gets a token. Otherwise, token = Nil
@@ -46,4 +49,9 @@ pub struct AdminsData { // Represents the admin which is added in the admins sta
 pub struct LoginRequestData { // A body which arrives when the login request is made.
     pub login : String,
     pub password : String
+}
+#[derive(Debug, Clone)]
+pub struct ActiveSessionsPool {
+    pub session_id : String,
+    pub countdown_secs : u16
 }
