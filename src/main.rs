@@ -1,6 +1,4 @@
 use std::sync::Arc;
-use std::time::Duration;
-use futures::SinkExt;
 use mysql::prelude::WithParams;
 use tokio::sync::Mutex;
 use warp::Filter;

@@ -29,14 +29,13 @@ pub fn spawn_async_thread_cleaner(active_sessions_pool: Arc<Mutex<Vec<ActiveSess
 }
 
 pub fn session_reduce_timer_and_filter(cloned : Vec<ActiveSessionsPool>) -> Vec<ActiveSessionsPool> {
-    let reduced = cloned
+    return cloned
         .iter()
         .map(|session| reduce_by_30(session))
         .collect::<Vec<ActiveSessionsPool>>()
         .into_iter()
         .filter(|session| session.countdown_secs >= 0)
         .collect::<Vec<ActiveSessionsPool>>();
-    return reduced
 }
 
 fn reduce_by_30(object : &ActiveSessionsPool) -> ActiveSessionsPool {
