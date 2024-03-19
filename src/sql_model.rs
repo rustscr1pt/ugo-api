@@ -4,12 +4,10 @@ use tokio::sync::{Mutex, MutexGuard};
 use mysql::{Error, params, Pool, PooledConn};
 use mysql::prelude::Queryable;
 use crate::data_models::{AdminsData, WriteToBaseNewCustomer};
-
-// /Users/egorivanov/Desktop/mysql.txt
-// C:\Users\User\Desktop\mysql.txt
+use crate::FILE_LOCATION;
 
 pub fn establish_connection() -> PooledConn { // First action to check the connection and establish a working pool
-    let pool = Pool::new(fs::read_to_string(r#"/Users/egorivanov/Desktop/mysql.txt"#).unwrap().trim()).expect("Couldn't connect to a base");
+    let pool = Pool::new(fs::read_to_string(FILE_LOCATION).unwrap().trim()).expect("Couldn't connect to a base");
     println!("Connection with MySQL pool is established!");
     return pool.get_conn().unwrap();
 }

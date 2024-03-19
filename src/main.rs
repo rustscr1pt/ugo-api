@@ -4,7 +4,7 @@ use tokio::sync::Mutex;
 use warp::Filter;
 use crate::data_models::ActiveSessionsPool;
 use crate::dep_injector::{with_admins_base, with_pool, with_session_pool};
-use crate::model_nosql::{spawn_async_thread_cleaner};
+use crate::model_nosql::{refresh_pool_connection, spawn_async_thread_cleaner};
 use crate::sql_model::{establish_connection, fill_the_admins};
 use crate::warp_handler::{handle_admin_login, handle_writing_task};
 
@@ -15,6 +15,10 @@ mod warp_handler;
 mod data_models;
 mod model_nosql;
 
+// /Users/egorivanov/Desktop/mysql.txt
+// C:\Users\User\Desktop\mysql.txt
+pub const FILE_LOCATION : &'static str = r#"C:\Users\User\Desktop\mysql.txt"#;
+
 #[tokio::main]
 async fn main() {
     let arc_sql = Arc::new(Mutex::new(establish_connection()));
@@ -23,7 +27,9 @@ async fn main() {
 
     let check_base = Arc::new(Mutex::new(fill_the_admins(Arc::clone(&arc_sql)).await.unwrap())); // Fill the base with available admins from MySQL
 
-    spawn_async_thread_cleaner(Arc::clone(&sessions_active_pool));
+    spawn_async_thread_cleaner(Arc::clone(&sessions_active_pool)); // spawn a cleaner of active sessions pool with a cool-down
+
+    refresh_pool_connection(Arc::clone(&arc_sql)); // spawn a refresher for MySQL connection
 
 
     let write_route = warp::path!("data" / "write") // Write a data about customer to MySQL
