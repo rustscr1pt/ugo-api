@@ -33,21 +33,26 @@ fn login_try_reply_with_message<T>(message: T, token : T) -> WebResult<reply::Wi
 
 // Write a new customer request to the mySQL database
 pub async fn handle_writing_task(body : WriteDataBody, pool : Arc<Mutex<PooledConn>>) -> WebResult<impl Reply> {
-    let mut sample_to_write : Vec<WriteToBaseNewCustomer> = Vec::with_capacity(1);
-    sample_to_write.push(WriteToBaseNewCustomer {
-        id: 0,
-        request_status: "БЕЗ ВНИМАНИЯ".to_string(),
-        customer_name: body.name,
-        customer_email: body.email,
-        customer_self_description: body.about_customer,
-        owner_notes: OwnerNotes { notes: vec![] },
-        object_logs: ObjectLogs { logs: vec![] }
-    });
-    let mut unlocked = pool.lock().await;
-    match insert_customer_in_table(&mut unlocked, sample_to_write) // Insert and get a response if it was successful or not.
-    {
-        Ok(_) => {reply_with_message(true, "Спасибо! Ваш запрос успешно отправлен!")}
-        Err(e) => {reply_with_message(false, e)}
+    if body.email.contains("@") {
+        let mut sample_to_write : Vec<WriteToBaseNewCustomer> = Vec::with_capacity(1);
+        sample_to_write.push(WriteToBaseNewCustomer {
+            id: 0,
+            request_status: "БЕЗ ВНИМАНИЯ".to_string(),
+            customer_name: body.name,
+            customer_email: body.email,
+            customer_self_description: body.about_customer,
+            owner_notes: OwnerNotes { notes: vec![] },
+            object_logs: ObjectLogs { logs: vec![] }
+        });
+        let mut unlocked = pool.lock().await;
+        match insert_customer_in_table(&mut unlocked, sample_to_write) // Insert and get a response if it was successful or not.
+        {
+            Ok(_) => {reply_with_message(true, "Спасибо! Ваш запрос успешно отправлен!")}
+            Err(e) => {reply_with_message(false, e)}
+        }
+    }
+    else {
+        reply_with_message(false, "Проверьте на правильность поле email")
     }
 }
 

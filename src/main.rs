@@ -23,11 +23,11 @@ pub const FILE_LOCATION : &'static str = r#"mysql.txt"#;
 async fn main() {
     let arc_sql = Arc::new(Mutex::new(establish_connection()));
 
-    let sessions_active_pool : Arc<Mutex<Vec<ActiveSessionsPool>>> = Arc::new(Mutex::new(Vec::new()));
-
-    let check_base = Arc::new(Mutex::new(fill_the_admins(Arc::clone(&arc_sql)).await.unwrap())); // Fill the base with available admins from MySQL
-
-    spawn_async_thread_cleaner(Arc::clone(&sessions_active_pool)); // spawn a cleaner of active sessions pool with a cool-down
+    // let sessions_active_pool : Arc<Mutex<Vec<ActiveSessionsPool>>> = Arc::new(Mutex::new(Vec::new()));
+    //
+    // let check_base = Arc::new(Mutex::new(fill_the_admins(Arc::clone(&arc_sql)).await.unwrap())); // Fill the base with available admins from MySQL
+    //
+    // spawn_async_thread_cleaner(Arc::clone(&sessions_active_pool)); // spawn a cleaner of active sessions pool with a cool-down
 
     refresh_pool_connection(Arc::clone(&arc_sql)); // spawn a refresher for MySQL connection
 
@@ -39,20 +39,20 @@ async fn main() {
         .and_then(handle_writing_task)
         .with(cors_config::get());
 
-    let admin_login = warp::path!("admin" / "login") // Work with an attempt of logging in admin panel
-        .and(warp::post())
-        .and(warp::body::json())
-        .and(with_session_pool(Arc::clone(&sessions_active_pool)))
-        .and(with_admins_base(Arc::clone(&check_base)))
-        .and_then(handle_admin_login)
-        .with(cors_config::get());
+    // let admin_login = warp::path!("admin" / "login") // Work with an attempt of logging in admin panel
+    //     .and(warp::post())
+    //     .and(warp::body::json())
+    //     .and(with_session_pool(Arc::clone(&sessions_active_pool)))
+    //     .and(with_admins_base(Arc::clone(&check_base)))
+    //     .and_then(handle_admin_login)
+    //     .with(cors_config::get());
 
     let refuse_connection = warp::any() // Refuse the connection if it doesn't match any filters
         .and(warp::method())
         .and_then(warp_handler::refuse_connection)
         .with(cors_config::get());
 
-    let routes = write_route.or(admin_login).or(refuse_connection);
+    let routes = write_route.or(refuse_connection);
 
     warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
 }

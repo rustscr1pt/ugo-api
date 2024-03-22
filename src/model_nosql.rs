@@ -9,18 +9,21 @@ use crate::FILE_LOCATION;
 
 pub fn refresh_pool_connection(to_refresh : Arc<Mutex<PooledConn>>) -> () {
     tokio::spawn(async move {
-        let mut timer : u8 = 10;
-        if timer == 0 {
-            let pool = Pool::new(fs::read_to_string(FILE_LOCATION).unwrap().trim()).expect("Couldn't connect to a base").get_conn().unwrap();
-            let mut unlocked = to_refresh.lock().await;
-            *unlocked = pool;
-            drop(unlocked);
-            println!("Connection with MySQL pool is refreshed");
-            timer = 60
-        }
-        else {
-            sleep(Duration::from_secs(1)).await;
-            timer -= 1;
+        let mut timer : u8 = 60;
+        loop {
+            if timer == 0 {
+                let pool = Pool::new(fs::read_to_string(FILE_LOCATION).unwrap().trim()).expect("Couldn't connect to a base").get_conn().unwrap();
+                let mut unlocked = to_refresh.lock().await;
+                *unlocked = pool;
+                drop(unlocked);
+                println!("Connection with MySQL pool is refreshed");
+                timer = 60;
+            }
+            else {
+                sleep(Duration::from_secs(1)).await;
+                timer -= 1;
+                println!("{} seconds estimated till MySQL pool is refreshed.", timer);
+            }
         }
     });
 }
