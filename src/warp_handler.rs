@@ -13,7 +13,7 @@ use crate::sql_model::insert_customer_in_table;
 type WebResult<T> = Result<T, Rejection>;
 
 pub async fn refuse_connection(_ : Method) -> WebResult<impl Reply> { // Refuse connection if it doesn't match any filters
-    Ok(reply::with_header(json(&Message { is_succeed: false, message: "This request is forbidden, connection is dropped".to_string() }), "Access-Control-Allow-Origin", "*"))
+    Ok(reply::with_header(json(&Message { is_succeed: false, message: "This request is forbidden, connection is dropped".to_string() }), "Access-Control-Allow-Origin", "http://ugo-vape.ru/"))
 }
 
 
@@ -21,7 +21,7 @@ pub async fn refuse_connection(_ : Method) -> WebResult<impl Reply> { // Refuse 
 fn reply_with_message<T>(condition : bool, message : T) -> WebResult<reply::WithHeader<Json>>
     where T : Display
 {
-    Ok(reply::with_header(json(&Message{ is_succeed: condition, message: message.to_string() }), "Access-Control-Allow-Origin", "*"))
+    Ok(reply::with_header(json(&Message{ is_succeed: condition, message: message.to_string() }), "Access-Control-Allow-Origin", "http://ugo-vape.ru/"))
 }
 
 // Reply for a login attempt at the admin panel
