@@ -17,7 +17,7 @@ mod model_nosql;
 
 // /Users/egorivanov/Desktop/mysql.txt
 // C:\Users\User\Desktop\mysql.txt
-pub const FILE_LOCATION : &'static str = r#"C:\Users\User\Desktop\mysql.txt"#;
+pub const FILE_LOCATION : &'static str = r#"mysql.txt"#;
 
 #[tokio::main]
 async fn main() {
