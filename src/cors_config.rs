@@ -7,11 +7,3 @@ pub fn get() -> Builder {
         .allow_headers(vec!["Access-Control-Allow-Origin", "Origin", "Accept", "X-Requested-With", "Content-Type"])
         .allow_methods(&[Method::GET, Method::POST]);
 }
-
-pub fn get_cors_key<'a>() -> &'a str {
-    return "Access-Control-Allow-Origin"
-}
-
-pub fn get_cors_value<'a>() -> &'a str {
-    return "*"
-}

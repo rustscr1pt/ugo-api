@@ -2,7 +2,7 @@ use std::fs;
 use std::sync::Arc;
 use std::time::Duration;
 use mysql::{Pool, PooledConn};
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::{Mutex, MutexGuard, RwLock};
 use tokio::time::sleep;
 use crate::data_models::{ActiveSessionsPool, AdminsData};
 use crate::FILE_LOCATION;
@@ -23,6 +23,30 @@ pub fn refresh_pool_connection(to_refresh : Arc<Mutex<PooledConn>>) -> () {
                 sleep(Duration::from_secs(1)).await;
                 timer -= 1;
                 println!("{} seconds estimated till MySQL pool is refreshed.", timer);
+            }
+        }
+    });
+}
+
+// Set age token for 24 hours and if user has the same allow it to web-site without age verification
+pub fn set_token_and_refresh(token_holder : Arc<RwLock<String>>) -> () {
+    tokio::spawn(async move {
+        let mut token_set = token_holder.write().await;
+        *token_set = String::from(uuid::Uuid::new_v4());
+        println!("Daily token : {}", token_set);
+        drop(token_set);
+        let mut timer = 24u8;
+        loop {
+            if timer == 0 {
+                let mut token_set = token_holder.write().await;
+                *token_set = String::from(uuid::Uuid::new_v4());
+                drop(token_set);
+                println!("Daily token for enter has been refreshed!");
+            }
+            else {
+                sleep(Duration::from_secs(3600)).await; // 3600 seconds == one hour
+                timer -= 1;
+                println!("{} hours left till token is refreshed", timer);
             }
         }
     });

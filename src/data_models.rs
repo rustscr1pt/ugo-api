@@ -55,3 +55,7 @@ pub struct ActiveSessionsPool {
     pub session_id : String,
     pub countdown_secs : u16
 }
+#[derive(Debug, Deserialize)]
+pub struct AgeStorageCheck { // A bode which arrives to check age
+    pub token : String
+}

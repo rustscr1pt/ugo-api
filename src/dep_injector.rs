@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use mysql::PooledConn;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 use warp::{Filter};
 use crate::data_models::{ActiveSessionsPool, AdminsData};
 
@@ -14,4 +14,8 @@ pub fn with_admins_base(base : Arc<Mutex<Vec<AdminsData>>>) -> impl Filter<Extra
 
 pub fn with_session_pool(session_pool : Arc<Mutex<Vec<ActiveSessionsPool>>>) -> impl Filter<Extract = (Arc<Mutex<Vec<ActiveSessionsPool>>>,), Error = std::convert::Infallible> + Clone {
     warp::any().map(move || session_pool.clone())
+}
+
+pub fn with_auth_token(auth_token : Arc<RwLock<String>>) -> impl Filter<Extract = (Arc<RwLock<String>>,), Error = std::convert::Infallible> + Clone {
+    warp::any().map(move || auth_token.clone())
 }

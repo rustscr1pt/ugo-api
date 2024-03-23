@@ -1,12 +1,12 @@
 use std::fmt::Display;
 use std::sync::Arc;
 use mysql::{PooledConn};
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
 use warp::http::Method;
 use warp::{Rejection, Reply, reply};
 use warp::reply::{json, Json};
-use crate::data_models::{ActiveSessionsPool, AdminsData, LoginRequestData, LoginTryMessage, Message, ObjectLogs, OwnerNotes, SESSION_DURATION, WriteDataBody, WriteToBaseNewCustomer};
+use crate::data_models::{ActiveSessionsPool, AdminsData, AgeStorageCheck, LoginRequestData, LoginTryMessage, Message, ObjectLogs, OwnerNotes, SESSION_DURATION, WriteDataBody, WriteToBaseNewCustomer};
 use crate::model_nosql::check_if_login_data_correct;
 use crate::sql_model::insert_customer_in_table;
 
@@ -54,6 +54,14 @@ pub async fn handle_writing_task(body : WriteDataBody, pool : Arc<Mutex<PooledCo
     else {
         reply_with_message(false, "Проверьте на правильность поле email")
     }
+}
+// Check if user's token in localstorage matches with current. If matches - it is redirected to the web-site. Otherwise, to the banner page
+pub async fn handle_auth_check(body : AgeStorageCheck, token_pool : Arc<RwLock<String>>) -> WebResult<impl Reply> {
+    let active_token = token_pool.read().await;
+    if *active_token == body.token {
+        return reply_with_message(true, "You have already been authorized");
+    }
+    return reply_with_message(false, "Please verify your age.");
 }
 
 // A function to handle user login in the admin panel. Answers with the LoginTryMessage struct. If the login was successful it would return a session token. Otherwise NIL
