@@ -6,9 +6,9 @@ use uuid::Uuid;
 use warp::http::Method;
 use warp::{Rejection, Reply, reply};
 use warp::reply::{json, Json};
-use crate::data_models::{ActiveSessionsPool, AdminsData, AgeStorageCheck, LoginRequestData, LoginTryMessage, Message, ObjectLogs, OwnerNotes, SESSION_DURATION, WriteDataBody, WriteToBaseNewCustomer};
-use crate::model_nosql::check_if_login_data_correct;
-use crate::sql_model::insert_customer_in_table;
+use crate::data_structs::{ActiveSessionsPool, AdminsData, AgeStorageCheck, LoginRequestData, LoginTryMessage, Message, ObjectLogs, OwnerNotes, SESSION_DURATION, WriteDataBody, WriteToBaseNewCustomer};
+use crate::operational_logic::check_if_login_data_correct;
+use crate::mysql_logic::insert_customer_in_table;
 
 type WebResult<T> = Result<T, Rejection>;
 

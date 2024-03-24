@@ -3,18 +3,18 @@ use futures::SinkExt;
 use mysql::prelude::WithParams;
 use tokio::sync::{Mutex, RwLock};
 use warp::Filter;
-use crate::data_models::ActiveSessionsPool;
-use crate::dep_injector::{with_admins_base, with_auth_token, with_pool, with_session_pool};
-use crate::model_nosql::{refresh_pool_connection, set_token_and_refresh, spawn_async_thread_cleaner};
-use crate::sql_model::{establish_connection, fill_the_admins};
+use crate::data_structs::ActiveSessionsPool;
+use crate::dependency_injector::{with_admins_base, with_auth_token, with_pool, with_session_pool};
+use crate::operational_logic::{refresh_pool_connection, set_token_and_refresh, spawn_async_thread_cleaner};
+use crate::mysql_logic::{establish_connection, fill_the_admins};
 use crate::warp_handler::{handle_admin_login, handle_auth_check, handle_writing_task};
 
-mod sql_model;
-mod dep_injector;
-mod cors_config;
+mod mysql_logic;
+mod dependency_injector;
+mod cors_config_builder;
 mod warp_handler;
-mod data_models;
-mod model_nosql;
+mod data_structs;
+mod operational_logic;
 
 // /Users/egorivanov/Desktop/mysql.txt - MacOS
 // C:\Users\User\Desktop\mysql.txt - Windows
@@ -42,7 +42,7 @@ async fn main() {
         .and(warp::body::json())
         .and(with_pool(Arc::clone(&arc_sql)))
         .and_then(handle_writing_task)
-        .with(cors_config::get());
+        .with(cors_config_builder::get());
 
     let check_token = warp::path!("token" / "check") // Check the token inside the localstorage of browser to decide if user should pass age verification again
         .and(warp::post())
@@ -50,7 +50,7 @@ async fn main() {
         .and(warp::body::json())
         .and(with_auth_token(Arc::clone(&rw_token)))
         .and_then(handle_auth_check)
-        .with(cors_config::get());
+        .with(cors_config_builder::get());
 
     // let admin_login = warp::path!("admin" / "login") // Work with an attempt of logging in admin panel
     //     .and(warp::post())
@@ -63,7 +63,7 @@ async fn main() {
     let refuse_connection = warp::any() // Refuse the connection if it doesn't match any filters
         .and(warp::method())
         .and_then(warp_handler::refuse_connection)
-        .with(cors_config::get());
+        .with(cors_config_builder::get());
 
     let routes = write_route.or(check_token).or(refuse_connection);
 

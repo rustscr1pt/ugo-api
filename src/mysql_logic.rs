@@ -3,7 +3,7 @@ use std::sync::Arc;
 use tokio::sync::{Mutex, MutexGuard};
 use mysql::{Error, params, Pool, PooledConn};
 use mysql::prelude::Queryable;
-use crate::data_models::{AdminsData, WriteToBaseNewCustomer};
+use crate::data_structs::{AdminsData, WriteToBaseNewCustomer};
 use crate::FILE_LOCATION;
 
 pub fn establish_connection() -> PooledConn { // First action to check the connection and establish a working pool

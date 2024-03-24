@@ -4,7 +4,7 @@ use std::time::Duration;
 use mysql::{Pool, PooledConn};
 use tokio::sync::{Mutex, MutexGuard, RwLock};
 use tokio::time::sleep;
-use crate::data_models::{ActiveSessionsPool, AdminsData};
+use crate::data_structs::{ActiveSessionsPool, AdminsData};
 use crate::FILE_LOCATION;
 
 pub fn refresh_pool_connection(to_refresh : Arc<Mutex<PooledConn>>) -> () {

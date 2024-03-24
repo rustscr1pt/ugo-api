@@ -2,7 +2,7 @@ use std::sync::Arc;
 use mysql::PooledConn;
 use tokio::sync::{Mutex, RwLock};
 use warp::{Filter};
-use crate::data_models::{ActiveSessionsPool, AdminsData};
+use crate::data_structs::{ActiveSessionsPool, AdminsData};
 
 pub fn with_pool(pool : Arc<Mutex<PooledConn>>) -> impl Filter<Extract = (Arc<Mutex<PooledConn>>,), Error = std::convert::Infallible> + Clone { // inject the Pooled connection inside the filter
     warp::any().map(move ||  pool.clone())
