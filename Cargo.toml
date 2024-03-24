@@ -14,4 +14,4 @@ serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0"
 itertools = "0.12.1"
 uuid = {version = "1.7.0", features = ["v4"]}
-#openssl = {version = "0.10.35", features = ["vendored"]}
+#openssl = {version = "0.10.35", features = ["vendored"]} Open if Linux compilation is needed.
