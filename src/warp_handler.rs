@@ -47,7 +47,7 @@ pub async fn handle_writing_task(body : WriteDataBody, pool : Arc<Mutex<PooledCo
         let mut unlocked = pool.lock().await;
         match insert_customer_in_table(&mut unlocked, sample_to_write) // Insert and get a response if it was successful or not.
         {
-            Ok(_) => {reply_with_message(true, "Спасибо! Ваш запрос успешно отправлен!")}
+            Ok(_) => {reply_with_message(true, "Спасибо! Ваш запрос был отправлен! Мы ответим вам как можно скорее.")}
             Err(e) => {reply_with_message(false, e)}
         }
     }
