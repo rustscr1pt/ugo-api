@@ -6,8 +6,8 @@ use uuid::Uuid;
 use warp::http::Method;
 use warp::{Rejection, Reply, reply};
 use warp::reply::{json, Json};
-use crate::data_structs::{ActiveSessionsPool, AdminsData, AgeStorageCheck, LoginRequestData, LoginTryMessage, Message, ObjectLogs, OwnerNotes, SESSION_DURATION, WriteDataBody, WriteToBaseNewCustomer};
-use crate::operational_logic::check_if_login_data_correct;
+use crate::data_structs::{ActiveSessionsPool, AdminsData, AgeStorageCheck, CheckFieldsCase, LoginRequestData, LoginTryMessage, Message, ObjectLogs, OwnerNotes, SESSION_DURATION, WriteDataBody, WriteToBaseNewCustomer};
+use crate::operational_logic::{check_before_sending, check_if_login_data_correct};
 use crate::mysql_logic::insert_customer_in_table;
 
 type WebResult<T> = Result<T, Rejection>;
@@ -33,26 +33,34 @@ fn login_try_reply_with_message<T>(message: T, token : T) -> WebResult<reply::Wi
 
 // Write a new customer request to the mySQL database
 pub async fn handle_writing_task(body : WriteDataBody, pool : Arc<Mutex<PooledConn>>) -> WebResult<impl Reply> {
-    if body.email.contains("@") {
-        let mut sample_to_write : Vec<WriteToBaseNewCustomer> = Vec::with_capacity(1);
-        sample_to_write.push(WriteToBaseNewCustomer {
-            id: 0,
-            request_status: "БЕЗ ВНИМАНИЯ".to_string(),
-            customer_name: body.name,
-            customer_email: body.email,
-            customer_self_description: body.about_customer,
-            owner_notes: OwnerNotes { notes: vec![] },
-            object_logs: ObjectLogs { logs: vec![] }
-        });
-        let mut unlocked = pool.lock().await;
-        match insert_customer_in_table(&mut unlocked, sample_to_write) // Insert and get a response if it was successful or not.
-        {
-            Ok(_) => {reply_with_message(true, "Спасибо! Ваш запрос был отправлен! Мы ответим вам как можно скорее.")}
-            Err(e) => {reply_with_message(false, e)}
+    match check_before_sending(&body) {
+        CheckFieldsCase::Ok => {
+            let mut sample_to_write : Vec<WriteToBaseNewCustomer> = Vec::with_capacity(1);
+            sample_to_write.push(WriteToBaseNewCustomer {
+                id: 0,
+                request_status: "БЕЗ ВНИМАНИЯ".to_string(),
+                customer_name: body.name,
+                customer_email: body.email,
+                customer_self_description: body.about_customer,
+                owner_notes: OwnerNotes { notes: vec![] },
+                object_logs: ObjectLogs { logs: vec![] }
+            });
+            let mut unlocked = pool.lock().await;
+            match insert_customer_in_table(&mut unlocked, sample_to_write) // Insert and get a response if it was successful or not.
+            {
+                Ok(_) => {reply_with_message(true, "Спасибо! Ваш запрос был отправлен! Мы ответим вам как можно скорее.")}
+                Err(e) => {reply_with_message(false, e)}
+            }
         }
-    }
-    else {
-        reply_with_message(false, "Проверьте на правильность поле email")
+        CheckFieldsCase::Email => {
+            reply_with_message(false, "Проверьте на правильность поле email")
+        }
+        CheckFieldsCase::Name => {
+            reply_with_message(false, "Поле 'имя' должно содержать больше 1 символа")
+        }
+        CheckFieldsCase::AboutCustomer => {
+            reply_with_message(false, "Поле 'о вас' должно содержать больше 1 символа")
+        }
     }
 }
 // Check if user's token in localstorage matches with current. If matches - it is redirected to the web-site. Otherwise, to the banner page

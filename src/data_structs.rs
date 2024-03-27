@@ -59,3 +59,10 @@ pub struct ActiveSessionsPool {
 pub struct AgeStorageCheck { // A bode which arrives to check age
     pub token : String
 }
+
+pub enum CheckFieldsCase { // Error cases in input field.
+    Ok,
+    Email,
+    Name,
+    AboutCustomer
+}

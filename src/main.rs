@@ -19,7 +19,7 @@ mod operational_logic;
 // /Users/egorivanov/Desktop/mysql.txt - MacOS
 // C:\Users\User\Desktop\mysql.txt - Windows
 // mysql.txt - Linux
-pub const FILE_LOCATION : &'static str = r#"C:\Users\User\Desktop\mysql.txt"#;
+pub const FILE_LOCATION : &'static str = r#"mysql.txt"#;
 
 #[tokio::main]
 async fn main() {

@@ -4,7 +4,7 @@ use std::time::Duration;
 use mysql::{Pool, PooledConn};
 use tokio::sync::{Mutex, MutexGuard, RwLock};
 use tokio::time::sleep;
-use crate::data_structs::{ActiveSessionsPool, AdminsData};
+use crate::data_structs::{ActiveSessionsPool, AdminsData, CheckFieldsCase, WriteDataBody};
 use crate::FILE_LOCATION;
 
 pub fn refresh_pool_connection(to_refresh : Arc<Mutex<PooledConn>>) -> () {
@@ -92,6 +92,21 @@ fn reduce_by_30(object : &ActiveSessionsPool) -> ActiveSessionsPool {
     return ActiveSessionsPool {
         session_id : String::from(&object.session_id),
         countdown_secs : object.countdown_secs - 30
+    }
+}
+
+pub fn check_before_sending(body : &WriteDataBody) -> CheckFieldsCase {
+    if !body.email.contains("@") {
+        return CheckFieldsCase::Email
+    }
+    else if body.name.len() <= 1 {
+        return CheckFieldsCase::Name
+    }
+    else if body.about_customer.len() <= 1 {
+        return CheckFieldsCase::AboutCustomer
+    }
+    else {
+        return CheckFieldsCase::Ok
     }
 }
 
